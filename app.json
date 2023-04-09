@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "mikroiot",
+    "name": "Mikro",
     "slug": "mikroiot",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icons/mikroAPP.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icons/iconmikro.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 4000
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,12 +22,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icons/mikroAPP.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.adriansdev.mikroiot"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1863e5b5-31fd-4654-923e-75211e24ab5e"
+      }
     }
   }
 }
