@@ -34,9 +34,8 @@ class FirstStep extends Component {
         modalMonitoring: false,
         modalCommand: false,
         isInputStatusActive: false,
-        monitoringTitle:null,
-        monitoringTopic:null,
-        monitoringChartType:null,
+        monitoringTitle: null,
+        monitoringTopic: null,
       }
   }
 
@@ -69,17 +68,6 @@ class FirstStep extends Component {
     }
   }
 
-  selectChartType = (params) => {
-    switch(params){
-      case 1:
-        this.setState({ monitoringChartType : 1})
-      break;
-      case 2:
-        this.setState({ monitoringChartType : 2});
-      break;
-    } 
-  }
-
   selectIconType = (params) => {
     switch (params) {
       case 1:
@@ -100,6 +88,33 @@ class FirstStep extends Component {
       case 6:
         this.setState({ selectedIcon: 6 })
         break;
+      case 7:
+        this.setState({ selectedIcon: 7 })
+        break;
+      case 8:
+        this.setState({ selectedIcon: 8 })
+        break;
+      case 9:
+        this.setState({ selectedIcon: 9 })
+        break;
+      case 10:
+        this.setState({ selectedIcon: 10 })
+        break;
+      case 11:
+        this.setState({ selectedIcon: 11 })
+        break;
+      case 12:
+        this.setState({ selectedIcon: 12 })
+        break;
+      case 13:
+        this.setState({ selectedIcon: 13 })
+        break;
+      case 14:
+        this.setState({ selectedIcon: 14 })
+        break;
+      case 15:
+        this.setState({ selectedIcon: 15 })
+        break;
     }
   }
 
@@ -115,7 +130,7 @@ class FirstStep extends Component {
     }
   }
 
-  sentToMonitoringAsync = async (key,objVal) => {
+  sentToMonitoringAsync = async (key, objVal) => {
     try {
       let objectedVal = await JSON.stringify(objVal)
       await AsyncStorage.setItem(key, objectedVal)
@@ -125,30 +140,29 @@ class FirstStep extends Component {
       return
     }
   }
-  
+
   setMonitoringObj = () => {
-   if(this.state.monitoringTitle == null || this.state.monitoringTopic == null || this.state.monitoringChartType == null){
-    Alert.alert(
-      'Input Tidak Boleh Kosong',
-      'Mohon Isi Input Yang Kosong',
-      [
-        {
-          text: 'OK',
-          style: 'cancel',
-        },
-      ],
-      { cancelable: false }
-    );
-   } else {
-     let monitorVal = {
+    if (this.state.monitoringTitle == null || this.state.monitoringTopic == null) {
+      Alert.alert(
+        'Input Tidak Boleh Kosong',
+        'Mohon Isi Input Yang Kosong',
+        [
+          {
+            text: 'OK',
+            style: 'cancel',
+          },
+        ],
+        { cancelable: false }
+      );
+    } else {
+      let monitorVal = {
         selectedBtn: 5,
         monitoringTitle: this.state.monitoringTitle,
-        monitoringTopic: this.state.monitoringTopic,
-        monitoringChartType: this.state.monitoringChartType
-     }                                     
-     let monitorRndKey = this.generateRandomKey()
-     this.sentToMonitoringAsync(monitorRndKey.toString(), monitorVal)
-   }
+        topicName: this.state.monitoringTopic,
+      }
+      let monitorRndKey = this.generateRandomKey()
+      this.sentToMonitoringAsync(monitorRndKey.toString(), monitorVal)
+    }
   }
 
 
@@ -178,13 +192,12 @@ class FirstStep extends Component {
         currentActive: this.state.currentActive,
       }
       let rndKey = this.generateRandomKey()
-      // const stringKey = this.state.currentNumber.toString();
       this.sendToAsync(rndKey.toString(), val);
     }
   }
 
   render() {
- 
+
 
     return (
       <View style={styles.mainContainer}>
@@ -245,95 +258,6 @@ class FirstStep extends Component {
                 style={{ marginBottom: 10 }}
                 label="Masukan MQTT Topic"
               ></TextInput>
-              <Text style={styles.hintTypeBtn}>Pilih Jenis Chart</Text>
-              <View style={styles.chartgridwrapper}>
-                <TouchableOpacity onPress={() => this.selectChartType(1)} style={[styles.chartgrid, {
-                  borderColor: this.state.monitoringChartType == 1 ? "#239ffb" : "#ddd",
-                  borderWidth: this.state.monitoringChartType == 1 ? 2 : 1,
-                }]}>
-                  <LineChart
-                    data={{
-                      labels: ["January", "February", "March", "April", "May", "June"],
-                      datasets: [
-                        {
-                          data: [
-                            10,
-                            15,
-                            26,
-                            20,
-                            30,
-                            14
-                          ]
-                        }
-                      ]
-                    }}
-                    width={160} // from react-native
-                    height={110}
-                    yAxisLabel=""
-                    yAxisSuffix=""
-                    yAxisInterval={1} // optional, defaults to 1
-                    chartConfig={{
-                      backgroundColor: "#e26a00",
-                      backgroundGradientFrom: "#fb8c00",
-                      backgroundGradientTo: "#ffa726",
-                      decimalPlaces: 2, // optional, defaults to 2dp
-                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                      style: {
-                        borderRadius: 16
-                      },
-                      propsForDots: {
-                        r: "6",
-                        strokeWidth: "2",
-                        stroke: "#ffa726"
-                      }
-                    }}
-                    bezier
-                    style={{
-                      marginVertical: 8,
-                      borderRadius: 16
-                    }}
-                  />
-
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.selectChartType(2)} style={[styles.chartgrid, {
-                  borderColor: this.state.monitoringChartType == 2 ? "#239ffb" : "#ddd",
-                  borderWidth: this.state.monitoringChartType == 2 ? 2 : 1,
-                }]}>
-                  <BarChart
-                    data={{
-                      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                      datasets: [
-                        {
-                          data: [20, 45, 28, 80, 99, 43, 50],
-                        },
-                      ],
-                    }}
-                    width={160}
-                    height={110}
-                    yAxisSuffix="%"
-                    yAxisInterval={1}
-                    chartConfig={{
-                      backgroundColor: '#e26a00',
-                      backgroundGradientFrom: '#fb8c00',
-                      backgroundGradientTo: '#ffa726',
-                      decimalPlaces: 0,
-                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                      style: {
-                        borderRadius: 16,
-                      },
-                      propsForVerticalLabels: {
-                        fontSize: 10,
-                      },
-                    }}
-                    style={{
-                      marginVertical: 8,
-                      borderRadius: 16,
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
               <TouchableOpacity onPress={this.setMonitoringObj}>
                 <LinearGradient
                   colors={["#2380bf", "#239ffb", "#55cfdb"]}
@@ -478,6 +402,60 @@ class FirstStep extends Component {
                 }]}>
                   <MaterialCommunityIcons name="television" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(7)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 7 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 7 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="application-braces" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(8)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 8 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 8 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="battery-20" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(9)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 9 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 9 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="bell-alert" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(10)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 10 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 10 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="cable-data" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(11)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 11 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 11 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="camera-wireless" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(12)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 12 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 12 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="cast-connected" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(13)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 13 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 13 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="ceiling-fan" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(14)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 14 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 14 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="door" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.selectIconType(15)} style={[styles.grid, {
+                  borderColor: this.state.selectedIcon == 15 ? "#239ffb" : "#ddd",
+                  borderWidth: this.state.selectedIcon == 15 ? 2 : 1,
+                }]}>
+                  <MaterialCommunityIcons name="engine" color={'#239ffb'} style={styles.materialIcon}></MaterialCommunityIcons>
+                </TouchableOpacity>
               </ScrollView>
 
 
@@ -555,21 +533,6 @@ const styles = StyleSheet.create({
     width: 80,
     backgroundColor: 'white',
     height: 80,
-    alignItems: 'center',
-    justifyContent: "center",
-    alignContent: 'center',
-    borderRadius: 5,
-  },
-  chartgrid: {
-    flexDirection: 'row',
-    marginLeft: 10,
-    overflow: "hidden",
-    flexWrap: 'wrap',
-    borderWidth: 1,
-    width: windowsWidth / 2.5,
-    marginBottom: 10,
-    backgroundColor: 'white',
-    height: 150,
     alignItems: 'center',
     justifyContent: "center",
     alignContent: 'center',
@@ -655,11 +618,6 @@ const styles = StyleSheet.create({
   },
   titleWrappers: {
     flex: 10,
-  },
-  chartgridwrapper: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    paddingVertical:15,
   },
   chartWrappers: {
     paddingHorizontal: 15,

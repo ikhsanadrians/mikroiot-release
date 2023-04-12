@@ -35,6 +35,8 @@ import Grid from '../components/Grid';
 import ProfilePic from '../assets/misc/samplepic.jpg';
 import { ActivityIndicator } from 'react-native-paper';
 import Loading from '../components/Loading';
+import { LineChart } from 'react-native-chart-kit';
+
 
 class HomePage extends Component {
   constructor(props) {
@@ -317,7 +319,11 @@ class HomePage extends Component {
       await this.state.data.map((data, index) => {
         if (data.key != "mqttConfig" && data.key != "username" && data.key != "profilPic") {
           let parsedSubsData = JSON.parse(data.value)
-          SubsVal[data.key] = parsedSubsData.topicName
+          if(parsedSubsData.topicNameStatus != null){
+            SubsVal[data.key] = parsedSubsData.topicNameStatus
+          } else {
+            SubsVal[data.key] = parsedSubsData.topicName
+          }
         }
         this.setState({ subscribeTopic: SubsVal })
       })
@@ -400,8 +406,8 @@ class HomePage extends Component {
           this.setState({ errorbutton: btnKey });
         } catch {
           Alert.alert(
-            'Destination Message Error',
-            'Periksa Kembali Destination Message!',
+            'Destination Topic Destination Button Error',
+            'Periksa Kembali Topic Destination!',
             [
               {
                 text: 'OK',
@@ -418,8 +424,8 @@ class HomePage extends Component {
           await this.client.send(msg1);
         } catch {
           Alert.alert(
-            'Destination Message Error',
-            'Periksa Kembali Destination Message!',
+            'Destination Topic Destination Button Error',
+            'Periksa Kembali Topic Destination!',
             [
               {
                 text: 'OK',
@@ -430,6 +436,7 @@ class HomePage extends Component {
           );
         }
       }
+      return parsedData.currentActive
     }
   }
 
@@ -512,6 +519,33 @@ class HomePage extends Component {
       case 6:
         return "television"
         break;
+      case 7:
+        return "application-braces"
+        break;
+      case 8:
+        return "battery-20"
+        break;
+      case 9:
+        return "bell-alert"
+        break;
+      case 10:
+        return "cable-data"
+        break;
+      case 11:
+        return "camera-wireless"
+        break;
+      case 12:
+        return "cast-connected"
+        break;
+      case 13:
+        return "ceiling-fan"
+        break;
+      case 14:
+        return "door"
+        break;
+      case 15:
+        return "engine"
+        break;
     }
   }
 
@@ -537,6 +571,8 @@ class HomePage extends Component {
   }
 
 
+
+
   render() {
     //mapping value dari async
     let arrayDataValue = []
@@ -544,11 +580,7 @@ class HomePage extends Component {
     let mqttConfigs = []
     let profilePic
 
-    // console.log(this.state.data)
-    // console.log(this.state.mqttUrl)
-    // console.log(this.props.route.params)
-    // console.log(this.state.status)
-    // console.log(this.state.data)
+    console.log(this.state.subscribeTopic)
 
 
     if (this.state.data != null) {
@@ -564,9 +596,13 @@ class HomePage extends Component {
         else {
           let key = data.key
           if (ParsedValue.selectedBtn == 5) {
-            arrayDataValue.push([key, ParsedValue.selectedBtn, ParsedValue.monitoringTitle, ParsedValue.monitoringTopic, ParsedValue.monitoringChartType]);
+            arrayDataValue.unshift([key, ParsedValue.selectedBtn, ParsedValue.monitoringTitle, ParsedValue.topicName]);
           } else {
-            arrayDataValue.push([key, ParsedValue.selectedBtn, ParsedValue.topicName, ParsedValue.templateName, ParsedValue.buttonTitle, ParsedValue.message1, ParsedValue.message2, ParsedValue.currentActive, ParsedValue.selectedIcon]);
+            if(ParsedValue.topicNameStatus != null){
+              arrayDataValue.unshift([key, ParsedValue.selectedBtn, ParsedValue.topicNameStatus, ParsedValue.templateName, ParsedValue.buttonTitle, ParsedValue.message1, ParsedValue.message2, ParsedValue.currentActive, ParsedValue.selectedIcon]);
+            } else {
+              arrayDataValue.unshift([key, ParsedValue.selectedBtn, ParsedValue.topicName, ParsedValue.templateName, ParsedValue.buttonTitle, ParsedValue.message1, ParsedValue.message2, ParsedValue.currentActive, ParsedValue.selectedIcon]);
+            }
           }
         }
       })
@@ -613,16 +649,16 @@ class HomePage extends Component {
                     <View key={index}>
                       {data[1] == 1 &&
                         <Grid remove={() => this.removeAsyncData(data[0])} key={index}>
-                          <View style={styles.switchContainer}>
-                            <View style={styles.switchInnerTop}>
-                              <View style={styles.switchIcon}>
-                                <MaterialCommunityIcons name={this.handleIconGrid(data[8])} size={30} color="#239ffb"></MaterialCommunityIcons>
-                              </View>
-                              <View style={styles.switchCurrentCondition}>
-                                <Text style={styles.textCondition}>{this.state.isSwitchOn[data[0]] == false ? "Off" : "On"}</Text>
-                              </View>
-                            </View>
+                           <View style={styles.btn3Container}>
                             <View style={styles.switchInnerBottom}>
+                              {this.state.latestTopicMessage[data[2]] &&
+                                <View style={styles.latestTopicContainer}>
+                                  <MaterialCommunityIcons name="message-badge" size={18} color="#656d77" />
+                                  <Text style={styles.latestTopicMsg}>
+                                    {this.state.latestTopicMessage[data[2]]}
+                                  </Text>
+                                </View>
+                              }
                               <Text style={styles.switchInnerTitle}>
                                 {data[4]}
                               </Text>
@@ -631,28 +667,28 @@ class HomePage extends Component {
                               </Text>
                               <Text>
                               </Text>
-                              <View style={styles.switch}>
-                                <CostumButton1 loading={this.state.status == 'IsFetching' ? true : false} btnTitle={this.state.status == 'IsFetching' ? '' : data[4]} key={index} onPress={() => this.sendToTopic(data[2], data[5], data[6], data[0])}>
-                                </CostumButton1>
-                              </View>
-
+                            </View>
+                            <View style={styles.btn3button}>
+                              <CostumButton1 btnTitle={data[4]} icon={this.handleIconGrid(data[8])} key={index} onPress={() => this.sendToTopic(data[2], data[5], data[6], data[0])} >
+                              </CostumButton1>
                             </View>
                           </View>
+
 
                         </Grid>
                       }
                       {data[1] == 2 &&
                         <Grid remove={() => this.removeAsyncData(data[0])} key={index}>
-                          <View style={styles.switchContainer}>
-                            <View style={styles.switchInnerTop}>
-                              <View style={styles.switchIcon}>
-                                <MaterialCommunityIcons name={this.handleIconGrid(data[8])} size={30} color="#239ffb"></MaterialCommunityIcons>
-                              </View>
-                              <View style={styles.switchCurrentCondition}>
-                                <Text style={styles.textCondition}>{this.state.isSwitchOn[data[0]] == false ? "Off" : "On"}</Text>
-                              </View>
-                            </View>
+                         <View style={styles.btn3Container}>
                             <View style={styles.switchInnerBottom}>
+                              {this.state.latestTopicMessage[data[2]] &&
+                                <View style={styles.latestTopicContainer}>
+                                  <MaterialCommunityIcons name="message-badge" size={18} color="#656d77" />
+                                  <Text style={styles.latestTopicMsg}>
+                                    {this.state.latestTopicMessage[data[2]]}
+                                  </Text>
+                                </View>
+                              }
                               <Text style={styles.switchInnerTitle}>
                                 {data[4]}
                               </Text>
@@ -661,13 +697,13 @@ class HomePage extends Component {
                               </Text>
                               <Text>
                               </Text>
-                              <View style={styles.switch}>
-                                <CostumButton2 w={90} h={45} btnTitle={data[4]} key={index} onPress={() => this.sendToTopic(data[2], data[5], data[6], data[0])}>
-                                </CostumButton2>
-                              </View>
-
+                            </View>
+                            <View style={styles.btn3button}>
+                              <CostumButton2 btnTitle={data[4]} icon={this.handleIconGrid(data[8])} key={index} onPress={() => this.sendToTopic(data[2], data[5], data[6], data[0])} >
+                              </CostumButton2>
                             </View>
                           </View>
+
                         </Grid>
 
                       }
@@ -752,10 +788,24 @@ class HomePage extends Component {
                       {
                         data[1] == 5 &&
                         <Grid remove={() => this.removeAsyncData(data[0])}>
-                          <Text>Monitoring</Text>
-                          <Text>{data[2]}</Text>
-                          <Text>{data[3]}</Text>
-                          <Text>chart : {data[4]}</Text>
+                          <View style={[styles.switchInnerBottom,{flex:1}]}>
+                            <Text style={styles.switchInnerTitle}>
+                              {data[2]}
+                            </Text>
+                            <TouchableOpacity onPress={() => ToastAndroid.show(data[3], ToastAndroid.SHORT)}>
+                              <Text numberOfLines={2} style={styles.switchInnerCondition}>
+                                {data[3]}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                          {this.state.latestTopicMessage[data[3]] &&
+                              <View style={[styles.latestTopicContainer,{marginTop:2,flex:1,borderTopWidth:1,borderColor:'#ddd'}]}>
+                                <MaterialCommunityIcons name="message-badge" size={18} color="#656d77" />
+                                <Text style={styles.latestTopicMsg}>
+                                  {this.state.latestTopicMessage[data[3]]}
+                                </Text>
+                              </View>
+                            }
                         </Grid>
 
                       }
