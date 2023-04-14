@@ -35,7 +35,7 @@ import Grid from '../components/Grid';
 import ProfilePic from '../assets/misc/samplepic.jpg';
 import { ActivityIndicator } from 'react-native-paper';
 import Loading from '../components/Loading';
-
+import * as Notifications from 'expo-notifications';
 
 class HomePage extends Component {
   constructor(props) {
@@ -95,14 +95,15 @@ class HomePage extends Component {
   async componentDidMount() {
     await this.loadData();
     await this.runConnect();
-
+    await this.checkNotificationPermissions();
   }
 
 
-  componentDidUpdate(prevProps, prevState) {
+  async componentDidUpdate(prevProps, prevState) {
     if (prevState.latitude === null || this.state.latitude !== prevState.latitude) {
       this.getLocation();
     }
+    
 
     if (this.props.route.params == "first") {
       this.loadData()
@@ -183,10 +184,9 @@ class HomePage extends Component {
   getLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      // setErrorMsg('Permission to Access Location denied');
       console.log('Permision Dennied')
       return;
-    }
+    }  
 
     let location = await Location.getCurrentPositionAsync({});
     this.setState({ latitude: location.coords.latitude });
@@ -294,6 +294,13 @@ class HomePage extends Component {
   };
 
 
+  checkNotificationPermissions = async() => {
+    if(await this.state.notificationEnable == "enabled"){
+    let { status } =  await Notifications.requestPermissionsAsync()
+    if(status != "granted") return
+  }
+}
+ 
   loadNotificationEnabled = async () => {
     let notifVal = []
     try {

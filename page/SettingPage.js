@@ -39,6 +39,7 @@ class SettingPage extends Component {
     this.getLatestDataProfilePic()
     this.getLatestProfileUsername()
     this.getLatestMqttConfig()
+    this.getLatestNotifSwitchValue()
   }
 
 
@@ -132,8 +133,13 @@ class SettingPage extends Component {
     } catch {
       return
     }
+  }
 
-
+  getLatestNotifSwitchValue = async () => {
+    let data = await AsyncStorage.getItem('notification');
+    const parsedData = JSON.parse(data)
+    if(parsedData["notif"] == "enabled") this.setState({switchNotif:true}) 
+    else this.setState({switchNotif:false})
   }
 
 
@@ -209,8 +215,6 @@ class SettingPage extends Component {
 
   render() {
     // console.log(`params setting : ${this.props.route.params}`);
-    console.log(this.state.profileImage)
-    console.log(this.state.username)
 
     return (
       <View style={styles.container}>
