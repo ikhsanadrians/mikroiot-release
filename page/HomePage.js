@@ -65,6 +65,7 @@ class HomePage extends Component {
       mqttId: 'id_' + parseInt(Math.random() * 100000),
       isLoadingVisible: false,
       notificationEnable:null,
+      notifiedMonitorings:{},
     }
 
     this.client = null;
@@ -234,12 +235,26 @@ class HomePage extends Component {
     }, 3000)
   }
 
-  onMessageArrived = (message) => {
+  onMessageArrived = async (message) => {
     try {
       let ltsmsg = { ...this.state.latestTopicMessage }
       if (message.payloadString) {
         ltsmsg[message.destinationName] = message.payloadString
         this.setState({ latestTopicMessage: ltsmsg })
+        if(this.state.notifiedMonitorings[message.destinationName] == true){
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: `Message From : ${message.destinationName}`,
+              body: message.payloadString,
+              data: {data:message.payloadString},
+              sound: 'default',
+            },
+            trigger: {
+              seconds: 5,
+              repeats:false,
+            },
+          });
+        }
       }
     } catch {
       return
@@ -287,6 +302,7 @@ class HomePage extends Component {
       await this.loadSwitchData();
       await this.loadSubscribedTopic();
       await this.loadNotificationEnabled();
+      await this.loadNotifiedMonitoring();
     }
     catch {
       return
@@ -297,6 +313,7 @@ class HomePage extends Component {
   checkNotificationPermissions = async() => {
     if(await this.state.notificationEnable == "enabled"){
     let { status } =  await Notifications.requestPermissionsAsync()
+    console.log(status)
     if(status != "granted") return
   }
 }
@@ -313,6 +330,24 @@ class HomePage extends Component {
       })
 
       this.setState({notificationEnable:notifVal})
+    } catch {
+      return 
+    }
+  }
+
+  
+  loadNotifiedMonitoring = async () => { 
+    let notifiedMonitoring = {}
+    try {
+      await this.state.data.map((data,index) => {
+         if(data.key != "mqttConfig" && data.key != "username" && data.key != "profilPic" && data.key != "notification"){
+           let ParsedValue = JSON.parse(data.value)
+           if(ParsedValue.selectedBtn == 5){
+             notifiedMonitoring[ParsedValue.topicName] = ParsedValue.notif
+           }
+           this.setState({notifiedMonitorings:notifiedMonitoring})
+         }
+      })
     } catch {
       return 
     }
@@ -342,7 +377,7 @@ class HomePage extends Component {
     let SubsVal = {};
     try {
       await this.state.data.map((data, index) => {
-        if (data.key != "mqttConfig" && data.key != "username" && data.key != "profilPic") {
+        if (data.key != "mqttConfig" && data.key != "username" && data.key != "profilPic" && data.key != "notification") {
           let parsedSubsData = JSON.parse(data.value)
           if(parsedSubsData.topicNameStatus != null){
             SubsVal[data.key] = parsedSubsData.topicNameStatus
@@ -361,7 +396,7 @@ class HomePage extends Component {
     let switchVal = {};
     try {
       await this.state.data.map((data, index) => {
-        if (data.key != "mqttConfig" && data.key != "username" && data.key != "profilPic") {
+        if (data.key != "mqttConfig" && data.key != "username" && data.key != "profilPic" && data.key != "notification") {
           let parsedData = JSON.parse(data.value);
           if (parsedData.selectedBtn == 4) {
             switchVal[data.key] = parsedData.currentActive
@@ -603,10 +638,12 @@ class HomePage extends Component {
     let arrayDataValue = []
     let configData = []
     let mqttConfigs = []
+    let notification
     let profilePic
 
+    console.log(this.state.notifiedMonitorings)
     // console.log(this.state.data)
-    console.log(`state notif : ${this.state.notificationEnable}`)
+
 
     if (this.state.data != null) {
       this.state.data.map((data, index) => {
@@ -617,6 +654,8 @@ class HomePage extends Component {
           configData.push(ParsedValue.name)
         } else if (data.key == "profilPic") {
           profilePic = ParsedValue.uri
+        } else if (data.key == "notification"){
+          notification = ParsedValue.notif
         }
         else {
           let key = data.key

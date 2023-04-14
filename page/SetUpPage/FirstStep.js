@@ -35,12 +35,23 @@ class FirstStep extends Component {
         isInputStatusActive: false,
         monitoringTitle: null,
         monitoringTopic: null,
+        notificationEnable:null,
+        monitoringNotification:null,
       }
   }
 
+  
+  componentDidMount = () => {
+    this.loadNotificationEnabled()
+  }
 
 
   generateRandomKey = () => {
+    let rnd = Math.floor(Math.random() * 100) + 1;
+    return rnd;
+  }
+
+  generateMonitoringRandomKey = () => {
     let rnd = Math.floor(Math.random() * 100) + 1;
     return rnd;
   }
@@ -113,6 +124,16 @@ class FirstStep extends Component {
     }
   }
 
+  loadNotificationEnabled = async () => {
+    let notifVal = []
+    try {
+      let data = await AsyncStorage.getItem('notification');
+      let parsedData = JSON.parse(data)
+      await this.setState({notificationEnable:parsedData.notif})
+    } catch {
+      return 
+    }
+  }
 
   sendToAsync = async (key, objVal) => {
     try {
@@ -154,8 +175,9 @@ class FirstStep extends Component {
         selectedBtn: 5,
         monitoringTitle: this.state.monitoringTitle,
         topicName: this.state.monitoringTopic,
+        notif : this.state.monitoringNotification
       }
-      let monitorRndKey = this.generateRandomKey()
+      let monitorRndKey = this.generateMonitoringRandomKey()
       this.sentToMonitoringAsync(monitorRndKey.toString(), monitorVal)
     }
   }
@@ -192,7 +214,7 @@ class FirstStep extends Component {
   }
 
   render() {
-
+    console.log(`switch state : ${this.state.monitoringNotification}`)
 
     return (
       <View style={styles.mainContainer}>
@@ -253,6 +275,11 @@ class FirstStep extends Component {
                 style={{ marginBottom: 10 }}
                 label="Masukan MQTT Topic"
               ></TextInput>
+              <View style={styles.notificationswitch}>
+                <Switch color="#239ffb" value={this.state.monitoringNotification} onValueChange={(val)=>this.setState({monitoringNotification:val})} style={{ display:this.state.notificationEnable == "enabled" ? "flex" :"none" }}>                
+                </Switch>
+                <Text style={styles.notificationHint}>Turn On Notification?</Text>
+              </View> 
               <TouchableOpacity onPress={this.setMonitoringObj}>
                 <LinearGradient
                   colors={["#2380bf", "#239ffb", "#55cfdb"]}
@@ -618,6 +645,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     flex: 1,
     width: '100%'
+  },
+  notificationswitch: {
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'flex-start',
+  },
+  notificationHint: {
+    fontFamily:'Inter'
   }
 
 
