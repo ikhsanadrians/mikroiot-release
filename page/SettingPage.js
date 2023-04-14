@@ -136,10 +136,17 @@ class SettingPage extends Component {
   }
 
   getLatestNotifSwitchValue = async () => {
-    let data = await AsyncStorage.getItem('notification');
-    const parsedData = JSON.parse(data)
-    if(parsedData["notif"] == "enabled") this.setState({switchNotif:true}) 
-    else this.setState({switchNotif:false})
+    try {
+      let data = await AsyncStorage.getItem('notification');
+      if(data){
+        const parsedData = JSON.parse(data)
+        if(parsedData["notif"] == "enabled") this.setState({switchNotif:true}) 
+        else this.setState({switchNotif:false})
+      }
+    } catch {
+      return 
+    }
+   
   }
 
 
@@ -214,7 +221,6 @@ class SettingPage extends Component {
 
 
   render() {
-    // console.log(`params setting : ${this.props.route.params}`);
 
     return (
       <View style={styles.container}>
@@ -595,9 +601,6 @@ const styles = StyleSheet.create({
     flexDirection:'row',
     alignItems:'flex-start'
   },
-  // notifSwitch:{
-  //  alignSelf:'flex-start'
-  // }
 });
 
 export default SettingPage;

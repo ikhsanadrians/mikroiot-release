@@ -104,6 +104,7 @@ class HomePage extends Component {
     if (prevState.latitude === null || this.state.latitude !== prevState.latitude) {
       this.getLocation();
     }
+
     
 
     if (this.props.route.params == "first") {
@@ -640,10 +641,6 @@ class HomePage extends Component {
     let mqttConfigs = []
     let notification
     let profilePic
-
-    console.log(this.state.notifiedMonitorings)
-    // console.log(this.state.data)
-
 
     if (this.state.data != null) {
       this.state.data.map((data, index) => {

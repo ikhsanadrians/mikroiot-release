@@ -275,8 +275,8 @@ class FirstStep extends Component {
                 style={{ marginBottom: 10 }}
                 label="Masukan MQTT Topic"
               ></TextInput>
-              <View style={styles.notificationswitch}>
-                <Switch color="#239ffb" value={this.state.monitoringNotification} onValueChange={(val)=>this.setState({monitoringNotification:val})} style={{ display:this.state.notificationEnable == "enabled" ? "flex" :"none" }}>                
+              <View style={[styles.notificationswitch,{display:this.state.notificationEnable == "enabled" ? "flex" :"none" }]}>
+                <Switch color="#239ffb" value={this.state.monitoringNotification} onValueChange={(val)=>this.setState({monitoringNotification:val})}>                
                 </Switch>
                 <Text style={styles.notificationHint}>Turn On Notification?</Text>
               </View> 
@@ -647,6 +647,7 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   notificationswitch: {
+    paddingVertical:10,
     flexDirection:'row',
     alignItems:'center',
     justifyContent:'flex-start',
