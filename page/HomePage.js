@@ -35,7 +35,6 @@ import Grid from '../components/Grid';
 import ProfilePic from '../assets/misc/samplepic.jpg';
 import { ActivityIndicator } from 'react-native-paper';
 import Loading from '../components/Loading';
-import { LineChart } from 'react-native-chart-kit';
 
 
 class HomePage extends Component {
@@ -65,6 +64,7 @@ class HomePage extends Component {
       profilPicPath: null,
       mqttId: 'id_' + parseInt(Math.random() * 100000),
       isLoadingVisible: false,
+      notificationEnable:null,
     }
 
     this.client = null;
@@ -286,12 +286,30 @@ class HomePage extends Component {
       await this.loadConfigData();
       await this.loadSwitchData();
       await this.loadSubscribedTopic();
+      await this.loadNotificationEnabled();
     }
     catch {
       return
     }
   };
 
+
+  loadNotificationEnabled = async () => {
+    let notifVal = []
+    try {
+      await this.state.data.map((data, index) => {
+        if (data.key == "notification") {
+          let parsedData = JSON.parse(data.value)
+          notifVal.push(parsedData["notif"]);
+        }
+       
+      })
+
+      this.setState({notificationEnable:notifVal})
+    } catch {
+      return 
+    }
+  }
 
   loadConfigData = async () => {
     let value = [];
@@ -580,8 +598,8 @@ class HomePage extends Component {
     let mqttConfigs = []
     let profilePic
 
-    console.log(this.state.subscribeTopic)
-
+    // console.log(this.state.data)
+    console.log(`state notif : ${this.state.notificationEnable}`)
 
     if (this.state.data != null) {
       this.state.data.map((data, index) => {

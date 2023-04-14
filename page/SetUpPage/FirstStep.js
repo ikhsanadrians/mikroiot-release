@@ -11,7 +11,6 @@ import { Switch, TextInput } from "react-native-paper";
 import HomePage from '../HomePage';
 import Grid from "../../components/Grid";
 import { TouchableOpacity } from "react-native";
-import { LineChart, BarChart } from "react-native-chart-kit";
 
 
 const windowsWidth = Dimensions.get('screen').width;
@@ -46,10 +45,6 @@ class FirstStep extends Component {
     return rnd;
   }
 
-
-  componentDidMount() {
-    // this.checkIfInputNull()
-  }
 
   selectButtonType = (params) => {
     switch (params) {

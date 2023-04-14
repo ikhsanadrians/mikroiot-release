@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { Surface } from "react-native-paper";
 import * as SplashScreen from 'expo-splash-screen'
 
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 

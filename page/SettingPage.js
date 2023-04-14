@@ -4,11 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons, FontAwesome, AntDesign, Ionicons, Entypo, Feather } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import HomePage from "./HomePage";
-import { TextInput, Dialog } from "react-native-paper";
+import { TextInput, Dialog, Switch} from "react-native-paper";
 import ProfilePic from '../assets/misc/samplepic.jpg';
 import * as ImagePicker from 'expo-image-picker';
-
-
+import * as Notifications from 'expo-notifications';
 class SettingPage extends Component {
   constructor(props) {
     super(props);
@@ -29,13 +28,34 @@ class SettingPage extends Component {
       deleteConfirm: false,
       currentData: {},
       profileImage: null,
-      username:null,
+      username: null,
+      modalMqttCurrent: false,
+      modalSetUpNotif: false,
+      switchNotif:false,
     };
   }
 
   componentDidMount = () => {
     this.getLatestDataProfilePic()
     this.getLatestProfileUsername()
+    this.getLatestMqttConfig()
+  }
+
+
+  getLatestMqttConfig = async () => {
+    try {
+      let data = await AsyncStorage.getItem('mqttConfig');
+      if (data) {
+        let ParsedData = JSON.parse(data)
+        this.setState({ mqttUrl: ParsedData.mqttUrl })
+        this.setState({ mqttPort: parseInt(ParsedData.mqttPort) })
+        this.setState({ mqttTopicPath: ParsedData.mqttTopicPath })
+        this.setState({ mqttUsername: ParsedData.mqttUsername })
+        this.setState({ mqttPassword: ParsedData.mqttPassword })
+      }
+    } catch {
+      return
+    }
   }
 
 
@@ -44,6 +64,11 @@ class SettingPage extends Component {
       .then(keys => AsyncStorage.multiRemove(keys))
       .then(this.props.navigation.navigate('Homepage', 'delete'))
     this.setState({ profileImage: null })
+    this.setState({mqttUrl:null})
+    this.setState({mqttPort:null})
+    this.setState({mqttTopicPath:null})
+    this.setState({mqttUsername:null})
+    this.setState({mqttPassword:null})
     this.setState({ deleteConfirm: false });
   }
 
@@ -74,9 +99,9 @@ class SettingPage extends Component {
     try {
       let data = await AsyncStorage.getItem('username')
       let parsedData = JSON.parse(data)
-      if(data) this.setState({username:parsedData.name})
+      if (data) this.setState({ username: parsedData.name })
     } catch {
-      return 
+      return
     }
   }
 
@@ -103,7 +128,7 @@ class SettingPage extends Component {
     try {
       await AsyncStorage.setItem('username', JSON.stringify(inputToUsername))
       await this.setState({ modalProfileEdit: false })
-      this.props.navigation.navigate('Homepage');
+      this.props.navigation.navigate('Homepage','settings');
     } catch {
       return
     }
@@ -152,28 +177,40 @@ class SettingPage extends Component {
       await this.setState({ modalMqtt: false })
       this.props.navigation.navigate('Homepage', 'settings');
     }
+  } 
+
+  handleEnableNotification = async(val) => {
+     this.setState({switchNotif:val})
+     if(val){
+      try {
+        let parsed = JSON.stringify({
+          notif:"enabled",
+        })
+        await AsyncStorage.setItem('notification',parsed)
+       } catch {
+         return 
+       }
+     } else {
+      try {
+        let parsed = JSON.stringify({
+          notif:"disabled",
+        })
+        await AsyncStorage.setItem('notification',parsed)
+       } catch {
+         return 
+       }
+     }
+   
+     this.props.navigation.navigate('Homepage','settings');
+     this.setState({modalSetUpNotif:false})
   }
 
-
-  // getMqttConfig = async() => {
-  //   let hasils = await AsyncStorage.getItem('mqttConfig');
-  //   console.log(hasils)
-  //   let ParsedHasil = JSON.parse(hasils);
-  //   let objHasil = {
-  //     url:ParsedHasil.mqttUrl,
-  //     port:ParsedHasil.mqttTopicPath,
-  //     user:ParsedHasil.mqttUsername,
-  //     pass:ParsedHasil.mqttPassword,
-  //   }
-  //   this.setState({currentData:objHasil})
-  // }
 
 
   render() {
     // console.log(`params setting : ${this.props.route.params}`);
     console.log(this.state.profileImage)
     console.log(this.state.username)
-
 
     return (
       <View style={styles.container}>
@@ -184,13 +221,46 @@ class SettingPage extends Component {
             <TouchableOpacity><Text style={styles.confirmText} onPress={this.clearAllData}>Confirm</Text></TouchableOpacity>
           </Dialog.Actions>
         </Dialog>
+
         <Modal visible={this.state.modalMqtt}>
           <View style={styles.modalMqtt}>
+            <Dialog style={{ zIndex: 10 }} visible={this.state.modalMqttCurrent} onDismiss={() => this.setState({ modalMqttCurrent: false })}>
+              <View style={styles.innerCurrentMQTT}>
+                {
+                  this.state.mqttUrl == null ? 
+                  <View style={{ alignContent:'center' }}>
+                    <Text>Not Connect To Any Broker</Text>
+                  </View>
+                  :
+                  <View>
+                    <Text style={{ fontFamily:"InterSemi" }}>Current Mqtt Connection</Text>
+                    <Text style={{ fontFamily:"Inter" }}>URL : {this.state.mqttUrl}</Text>
+                    <Text style={{ fontFamily:"Inter" }}>Port : {this.state.mqttPort}</Text>
+                    <Text style={{ fontFamily:"Inter" }}>Username : {this.state.mqttUsername}</Text>
+                    <Text style={{ fontFamily:"Inter" }}>Password : {this.state.mqttPassword}</Text>
+                  </View>
+                }
+                
+              </View>
+             
+              <Dialog.Actions>
+                <TouchableOpacity onPress={() => this.setState({ modalMqttCurrent: false })}>
+                  <Text style={{ color:"#239ffb" }}>OK</Text>
+                </TouchableOpacity>
+              </Dialog.Actions>
+            </Dialog>
             <View style={styles.modalMqttHeader}>
-              <TouchableOpacity onPress={() => this.setState({ modalMqtt: false })}>
-                <MaterialCommunityIcons name="arrow-left" size={25}></MaterialCommunityIcons>
-              </TouchableOpacity>
-              <Text style={styles.modalMqttTitle}>Set Up MQTT</Text>
+              <View style={styles.leftMqttHeader}>
+                <TouchableOpacity onPress={() => this.setState({ modalMqtt: false })}>
+                  <MaterialCommunityIcons name="arrow-left" size={25}></MaterialCommunityIcons>
+                </TouchableOpacity>
+                <Text style={styles.modalMqttTitle}>Set Up MQTT</Text>
+              </View>
+              <View style={styles.rightMqttHeader}>
+                <TouchableOpacity onPress={() => this.setState({ modalMqttCurrent: true })}>
+                  <MaterialCommunityIcons name="lan-connect" size={20} color={this.state.mqttUrl == null ? "red" : "green"}></MaterialCommunityIcons>
+                </TouchableOpacity>
+              </View>
             </View>
             <View style={styles.modalMqttContainer}>
               <Text style={styles.modalConfigTitle}>
@@ -255,7 +325,7 @@ class SettingPage extends Component {
               </Text>
               <View style={styles.userPictureEdit}>
                 <View style={styles.userPictureInner}>
-                  <Image source={{uri: this.state.profileImage}} style={styles.profilepic}></Image>
+                  <Image source={{ uri: this.state.profileImage }} style={styles.profilepic}></Image>
                 </View>
                 <TouchableOpacity style={styles.edit} onPress={this.pickImage}>
                   <Entypo name="pencil" size={17} color={'white'}></Entypo>
@@ -264,10 +334,10 @@ class SettingPage extends Component {
               <View style={styles.userInputName}>
                 <Text style={styles.currentUsername}>{this.state.username}</Text>
                 <TextInput
-                   mode="outlined"
-                   outlineColor="#ddd"
-                   activeOutlineColor="#239ffb"
-                   onChangeText={(paramUsername) => this.setState({ mqttUsername: paramUsername })} label={"Your Username"} style={styles.modalMqttInputUrl}>
+                  mode="outlined"
+                  outlineColor="#ddd"
+                  activeOutlineColor="#239ffb"
+                  onChangeText={(paramUsername) => this.setState({ mqttUsername: paramUsername })} label={"Your Username"} style={styles.modalMqttInputUrl}>
                 </TextInput>
                 <TouchableOpacity onPress={() => this.getDataFromUsernameInput(this.state.mqttUsername)}>
                   <LinearGradient colors={["#2380bf", "#239ffb", "#55cfdb"]} style={styles.modalMqttUpload}>
@@ -277,6 +347,27 @@ class SettingPage extends Component {
                 </TouchableOpacity>
               </View>
 
+            </View>
+          </View>
+
+        </Modal>
+        <Modal visible={this.state.modalSetUpNotif}>
+          <View style={styles.modalMqtt}>
+            <View style={styles.modalMqttHeader}>
+              <TouchableOpacity onPress={() => this.setState({ modalSetUpNotif: false })}>
+                <MaterialCommunityIcons name="arrow-left" size={25}></MaterialCommunityIcons>
+              </TouchableOpacity>
+              <Text style={styles.modalMqttTitle}>Set Up Notification</Text>
+
+            </View>
+            <View style={styles.modalMqttContainer}>
+                <View style={styles.notifOption}>
+                  <Switch value={this.state.switchNotif} onValueChange={(val)=>this.handleEnableNotification(val)}></Switch>
+                  <Text style={styles.notifDesc}>
+                   Enable notifications when a message from mqtt arrives
+                  </Text>
+                </View>
+                
             </View>
           </View>
 
@@ -300,14 +391,15 @@ class SettingPage extends Component {
               <MaterialCommunityIcons name="connection" size={24} color="#787E87" />
               <Text style={styles.mqttTitle}>Set Up Your MQTT URL</Text>
             </View>
+            <AntDesign name="right" size={24} color="#787E87" />
           </TouchableOpacity>
-          <View style={styles.mqttConnect}>
+          <TouchableOpacity onPress={()=>this.setState({ modalSetUpNotif: true})} style={styles.mqttConnect}>
             <View style={styles.mqttConnectInner}>
               <Ionicons name="ios-notifications" size={24} color="#787E87" />
               <Text style={styles.mqttTitle}>Set Up Notifications</Text>
             </View>
             <AntDesign name="right" size={24} color="#787E87" />
-          </View>
+          </TouchableOpacity>
           <View style={styles.mqttConnect}>
             <View style={styles.mqttConnectInner}>
               <Entypo name="help-with-circle" size={24} color="#787E87" />
@@ -380,16 +472,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalMqttTitle: {
-    fontFamily: 'Inter',
+    fontFamily: 'InterSemi',
     marginLeft: 10,
   },
   modalMqttHeader: {
     flexDirection: 'row',
-    alignItems: 'center'
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 9,
   },
   modalMqttContainer: {
     flex: 1,
     paddingTop: 20,
+    zIndex: -1,
   },
   modalMqttInputUrl: {
     width: "100%",
@@ -420,20 +515,20 @@ const styles = StyleSheet.create({
   },
   userPictureEdit: {
     flex: 1,
-    height:150,
+    height: 150,
   },
   userPictureInner: {
     alignSelf: "center",
     overflow: "hidden",
     height: 90,
-    borderWidth:1.5,
-    borderColor:'#ccc',
+    borderWidth: 1.5,
+    borderColor: '#ccc',
     borderRadius: 20,
     width: 90,
   },
   userInputName: {
     flex: 4,
-    height:3,
+    height: 3,
   },
   modalProfileTitle: {
     flex: .4,
@@ -472,11 +567,33 @@ const styles = StyleSheet.create({
     color: '#239ffb'
   },
   currentUsername: {
-    fontFamily:'InterSemi',
+    fontFamily: 'InterSemi',
     fontSize: 20,
-    margin:10,
-    textAlign:'center'
-  }
+    margin: 10,
+    textAlign: 'center'
+  },
+  leftMqttHeader: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  innerCurrentMQTT: {
+    padding:10,
+  },
+  notifDesc: {
+    fontFamily: 'Inter',
+    width: '90%'
+  },
+  notifOption:{
+    flex:1,
+    gap:2,
+    paddingTop:40,
+    paddingRight:20,
+    flexDirection:'row',
+    alignItems:'flex-start'
+  },
+  // notifSwitch:{
+  //  alignSelf:'flex-start'
+  // }
 });
 
 export default SettingPage;
